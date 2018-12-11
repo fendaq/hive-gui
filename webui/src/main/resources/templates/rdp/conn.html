@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>SPM</title>
+    <style type="text/css">
+        html, body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        .ie-msg-mox{
+            width: calc(100% - 100px);
+            height: 300px;
+            margin: 100px auto;
+            background-color: #DDD;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+    function OnControlLoadError(){
+        alert('连接失败');
+    }
+
+    // 连接远程桌面
+    function RdpConnect()
+    {
+        document.getElementById("connectArea").style.display = "block";
+        MsRdpClient.Server = "${conf.location}";
+        MsRdpClient.Domain = "${conf.domain}";
+        MsRdpClient.UserName = "${conf.username}";
+        MsRdpClient.AdvancedSettings2.ClearTextpassword = "${conf.password}";
+        MsRdpClient.AdvancedSettings2.RDPPort = ${conf.port};
+        MsRdpClient.FullScreen=0;
+        MsRdpClient.Width=window.width;
+        MsRdpClient.Height=window.height;
+        MsRdpClient.DesktopWidth=window.width;
+        MsRdpClient.DesktopHeight=window.height;
+        MsRdpClient.OnDisconnected = function(a){
+            console.log(a);
+            alert("已断开," + a);
+        };
+        MsRdpClient.Connect();
+
+    }
+
+    // 自动连接
+    window.onload = function (ev) {
+        var agent = window.navigator.userAgent;
+        if (agent.indexOf("MSIE") == -1 && agent.indexOf("vr:11.0") == -1) {
+            // 非IE
+            document.getElementById("ie-href").setAttribute("href", "ie://" + encodeURI(window.location));
+            document.getElementById("ie-href-area").value = encodeURI(window.location);
+            document.getElementById("open-ie").style.display = "block";
+        }else{
+            RdpConnect();
+        }
+    }
+
+</script>
+<div id="open-ie" class="ie-msg-mox" style="display: none">
+    <p>
+        您当前浏览器不支持远程桌面连接, 请<a href="ie://" id="ie-href">点击此处</a>或复制下方链接到IE浏览器打开.
+    </p>
+    <textarea style="width: 100%; height: 200px" id="ie-href-area"></textarea>
+</div>
+
+<div id=connectArea style="display: none; width: 100%; height: 100%;">
+    <OBJECT ID="MsRdpClient"
+            onerror="OnControlLoadError()"
+            CLASSID="CLSID:7584c670-2274-4efb-b00b-d6aaba6d3850"
+            CODEBASE="msrdp.cab#version=5,2,3790,0"
+            WIDTH=100%
+            HEIGHT=100%>
+    </OBJECT>
+</div>
+</body>
+</html>

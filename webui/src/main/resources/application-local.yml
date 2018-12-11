@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: web-kettle
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/kettle?characterEncoding=utf-8
+  freemarker:
+    suffix: .html
+    content-type: text/html
+    template-loader-path: classpath:/templates/
+    charset: UTF-8
+    cache: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 4096MB
+      max-request-size: 4096MB
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.webkettle.sql.entity
+
+#统一开发平台, 认证相关
+auth:
+  login-path: http://localhost:8080/bpm/login.jsp
+  system-id: 10000000010000
+#大数据相关
+bigdata:
+  db:
+    username: root
+    password: root
+    zookeper: 192.168.33.128:10000
+    jdbcname: org.apache.hive.jdbc.HiveDriver
+    jdbc-url: jdbc:hive2://${bigdata.db.zookeper}/
+  hdfs:
+    url: hdfs://192.168.33.128:9000
+    prefix: /cust_upload/
+    collection-path: /user/rms/ftp/data/
+    user: root
+    prop: classpath:hadoop/dev/
+    prncipal-name: hdfsDeveloper
+    keytab-path: classpath:hadoop/dev/user.keytab
+    krb5-path: classpath:hadoop/dev/krb5.conf
+
+#任务调度相关
+quartz:
+  prop-path: /quartz/quartz-local.properties
+
+logging:
+  level:
+    com.webkettle: info
+  path: ./logs
+  file: ./logs/big-data.log
+

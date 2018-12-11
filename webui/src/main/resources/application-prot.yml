@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: web-kettle
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: rmms
+    password: rmms
+    url: jdbc:oracle:thin:@103.160.113.48:1521/RiskModelDev
+  freemarker:
+    suffix: .html
+    content-type: text/html
+    template-loader-path: classpath:/templates/
+    charset: UTF-8
+    cache: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 4096MB
+      max-request-size: 4096MB
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.webkettle.sql.entity
+
+#统一开发平台, 认证相关
+auth:
+  login-path: http://localhost:8080/bpm/login.jsp
+  system-id: 10000000010000
+  auth-path: 103.160.113.48:9080
+  test-token:
+#大数据相关
+bigdata:
+  db:
+    username: riskcon1
+    password: Risk.123
+    zookeper: 103.160.108.161:24002,103.160.108.162:24002,103.160.108.163:24002
+    jdbcname: org.apache.hive.jdbc.HiveDriver
+    jdbc-url: jdbc:hive2://${bigdata.db.zookeper}/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2;sasl.qop=auth-conf;auth=KERBEROS;principal=hive/hadoop.hadoop.com/HADOOP.COM;user.principal=riskcon1;user.keytab=${bigdata.hdfs.keytab-path}
+  hdfs:
+    url:
+    prefix: /user/rmms/upload/
+    collection-path: /user/rmms/ftp/data/
+    user: riskcon1
+    prop: hadoop/prot/
+    prncipal-name: riskcon1
+    keytab-path: hadoop/prot/user.keytab
+    krb5-path: hadoop/prot/krb5.conf
+
+
+#任务调度相关
+quartz:
+  prop-path: /quartz/quartz-prot.properties
+
+# 日志
+logging:
+  level:
+    com.webkettle: info
+  path: ./logs
+  file: ./logs/big-data.log
+

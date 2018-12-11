@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.webkettle.dao.EtlJobDao">
+    <!-- 获取带有组名称等信息的任务列表 -->
+
+    <select id="listAllJobs" resultType="hashmap">
+        SELECT
+        jobId,
+        createTime,
+        etlType,
+        jobName,
+        etlComment,
+        config,
+        createUser,
+        updateType,
+        pathName,
+        tableName,
+        dbName,
+        executeCount,
+        groupName,
+        groupId,
+        jobType,
+        isDelete,
+        updateTime,
+        hasSuccess
+        FROM
+        (
+        SELECT
+        jb.JOB_ID AS jobId,
+        jb.CREAT_TIME AS createTime,
+        jb.ETL_TYPE AS etlType,
+        jb.JOB_NAME AS jobName,
+        jb.ETL_COMMENT AS etlComment,
+        jb.CONFIG AS config,
+        jb.CREAT_USER AS createUser,
+        jb.UPDATE_TYPE AS updateType,
+        jb.PATH_NAME AS pathName,
+        jb.TABLE_NAME AS tableName,
+        jb.DATABASE_NAME AS dbName,
+        jb.EXECUTE_COUNT AS executeCount,
+        grp.JOB_GROUP_NAME AS groupName,
+        grp.JOB_GROUP_ID as groupId,
+        jb.JOB_TYPE AS jobType,
+        jb.IS_DELETE AS isDelete,
+        jb.UPDATE_TIME AS updateTime,
+        jb.HAS_SUCCESS AS hasSuccess
+        FROM
+        ETL_JOB jb
+        LEFT JOIN
+        (select
+        ejg.JOB_GROUP_NAME,
+        ejg.JOB_GROUP_ID,
+        ejj.JOB_ID
+        from ETL_JOB_GROUP ejg
+        join ETL_JOB_JOBGROUP ejj
+        on ejg.JOB_GROUP_ID = ejj.JOB_GROUP_ID
+        )grp
+        ON jb.JOB_ID = grp.JOB_ID
+        )t1
+        WHERE t1.isDelete != 'Y' and t1.createUser = #{userName}
+        AND t1.ETLTYPE <![CDATA[<>]]> 'COLLECT' AND (t1.groupId = 0 or t1.groupId is null)
+
+    </select>
+
+    <select id="listTempJobs" resultType="hashmap">
+        SELECT
+        jobId,
+        createTime,
+        etlType,
+        jobName,
+        etlComment,
+        config,
+        createUser,
+        updateType,
+        pathName,
+        tableName,
+        dbName,
+        executeCount,
+        groupName,
+        groupId,
+        jobType,
+        isDelete,
+        updateTime,
+        hasSuccess
+        FROM
+        (
+        SELECT
+        jb.JOB_ID AS jobId,
+        jb.CREAT_TIME AS createTime,
+        jb.ETL_TYPE AS etlType,
+        jb.JOB_NAME AS jobName,
+        jb.ETL_COMMENT AS etlComment,
+        jb.CONFIG AS config,
+        jb.CREAT_USER AS createUser,
+        jb.UPDATE_TYPE AS updateType,
+        jb.PATH_NAME AS pathName,
+        jb.TABLE_NAME AS tableName,
+        jb.DATABASE_NAME AS dbName,
+        jb.EXECUTE_COUNT AS executeCount,
+        grp.JOB_GROUP_NAME AS groupName,
+        grp.JOB_GROUP_ID as groupId,
+        jb.JOB_TYPE AS jobType,
+        jb.IS_DELETE AS isDelete,
+        jb.UPDATE_TIME AS updateTime,
+        jb.HAS_SUCCESS AS hasSuccess
+        FROM
+        ETL_JOB jb
+        LEFT JOIN
+        (select
+        ejg.JOB_GROUP_NAME,
+        ejg.JOB_GROUP_ID,
+        ejj.JOB_ID
+        from ETL_JOB_GROUP ejg
+        join ETL_JOB_JOBGROUP ejj
+        on ejg.JOB_GROUP_ID = ejj.JOB_GROUP_ID
+        )grp
+        ON jb.JOB_ID = grp.JOB_ID
+        )t1
+        WHERE t1.isDelete != 'Y' and t1.createUser = #{userName}
+        AND t1.ETLTYPE <![CDATA[<>]]> 'COLLECT' AND (t1.groupId = 0 or t1.groupId is null)
+        AND t1.hasSuccess = 'N'
+    </select>
+
+    <select id="listPage" resultType="hashmap">
+        SELECT * FROM(
+            SELECT
+                jobId,createTime,etlType,jobName,etlComment,config,createUser,updateType,pathName,updateTime,hasSuccess,
+                tableName,dbName,executeCount,isDelete,groupName,groupId,jobType,lastTimeState, ROWNUM AS RN____
+            FROM(
+                SELECT
+                    jb.JOB_ID AS jobId,jb.CREAT_TIME AS createTime,jb.ETL_TYPE AS etlType,jb.JOB_NAME AS jobName,
+                    jb.UPDATE_TIME AS updateTime,jb.ETL_COMMENT AS etlComment,jb.CONFIG AS config,
+                    jb.CREAT_USER AS createUser,jb.UPDATE_TYPE AS updateType,jb.PATH_NAME AS pathName,
+                    jb.TABLE_NAME AS tableName,jb.DATABASE_NAME AS dbName,jb.EXECUTE_COUNT AS executeCount,
+                    jb.IS_DELETE AS isDelete,grp.JOB_GROUP_NAME AS groupName,grp.JOB_GROUP_ID as groupId,
+                    jb.JOB_TYPE AS jobType, jb.HAS_SUCCESS AS hasSuccess,jb.LAST_TIME_STATE AS lastTimeState
+                FROM
+                    ETL_JOB jb
+                LEFT JOIN(
+                    select
+                        ejg.JOB_GROUP_NAME,
+                        ejg.JOB_GROUP_ID,
+                        ejj.JOB_ID
+                    from ETL_JOB_GROUP ejg
+                    join ETL_JOB_JOBGROUP ejj
+                    on ejg.JOB_GROUP_ID = ejj.JOB_GROUP_ID
+                )grp
+                ON jb.JOB_ID = grp.JOB_ID
+                ORDER BY jb.JOB_ID DESC
+            )t1
+            where
+                '1' = '1'
+                AND t1.isDelete != 'Y' AND t1.createUser = #{userName}
+                <if test="null != jobType and jobType != ''">
+                    AND t1.jobType = #{jobType}
+                </if>
+                <if test="null != dbName and dbName != ''">
+                    AND t1.dbName = #{dbName}
+                </if>
+                <if test="null != groupId and groupId != ''">
+                    AND t1.groupId = #{groupId}
+                </if>
+                <if test="null != tableName and tableName != ''">
+                    AND t1.tableName LIKE #{tableName}
+                </if>
+                <if test="null != hasSuccess and hasSuccess != ''">
+                    AND t1.hasSuccess = #{hasSuccess}
+                </if>
+        )t2
+        <![CDATA[
+          WHERE t2.RN____> #{startNm} AND t2.RN____ <= #{endNum}
+         ]]>
+
+    </select>
+
+    <select id="countSearch" resultType="Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        (
+        SELECT
+        jb.JOB_TYPE,
+        jb.DATABASE_NAME,
+        jb.IS_DELETE,
+        grp.JOB_GROUP_ID,
+        jb.TABLE_NAME,
+        jb.CREAT_USER,
+        jb.HAS_SUCCESS
+        FROM
+        ETL_JOB jb
+        LEFT JOIN
+        (select
+        ejg.JOB_GROUP_NAME,
+        ejg.JOB_GROUP_ID,
+        ejj.JOB_ID
+        from ETL_JOB_GROUP ejg
+        join ETL_JOB_JOBGROUP ejj
+        on ejg.JOB_GROUP_ID = ejj.JOB_GROUP_ID
+        )grp
+        ON jb.JOB_ID = grp.JOB_ID
+        )t1
+        where
+        1=1
+        AND t1.IS_DELETE != 'Y' AND t1.CREAT_USER = #{userName}
+        <if test="null != jobType and jobType != ''">
+            AND t1.JOB_TYPE = #{jobType}
+        </if>
+        <if test="null != dbName and dbName != ''">
+            AND t1.DATABASE_NAME = #{dbName}
+        </if>
+        <if test="null != groupId and groupId != ''">
+            AND t1.JOB_GROUP_ID = #{groupId}
+        </if>
+        <if test="null != tableName and tableName != ''">
+            AND t1.TABLE_NAME LIKE #{tableName}
+        </if>
+        <if test="null != hasSuccess and hasSuccess != ''">
+            AND t1.HAS_SUCCESS = #{hasSuccess}
+        </if>
+    </select>
+
+
+</mapper>
